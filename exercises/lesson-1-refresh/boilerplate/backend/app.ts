@@ -30,12 +30,10 @@ app.get("/ping", (req, res) => {
   res.sendStatus(204);
 });
 
-app.listen(3000, () => {
-  console.log("Server listening on http://localhost:3000");
+const port = Number(process.env.PORT) || 3000;
+
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server listening on port ${port}`);
 });
-app.use(
-  cors({
-    origin: ['http://localhost:5173', /\.onrender\.com$/],
-  })
-);
+
 export default app;
