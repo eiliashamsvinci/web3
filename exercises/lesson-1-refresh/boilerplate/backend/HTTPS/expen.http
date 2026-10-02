@@ -1,0 +1,2 @@
+###read all expenses
+GET http://localhost:3000/api/expenses
