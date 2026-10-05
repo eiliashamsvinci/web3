@@ -1,20 +1,22 @@
-import type { Expense } from "../type/Expense";
+/**
+ * A simple component to display an expense item
+ */
 
+import type { Expense } from "../types/Expense";
 
 interface ExpenseItemProps {
-    expense: Expense;
+  expense: Expense;
 }
 
-const ExpenseItem = ({ expense }: ExpenseItemProps) => {
-
-    return (
-        <div>
-            <p>Date: {expense.date}</p>
-            <p>Description: {expense.description}</p>
-            <p>Payer: {expense.payer}</p>
-            <p>Amount: ${expense.amount.toFixed(2)}</p>
-        </div>
-    );
-};
+function ExpenseItem({ expense }: ExpenseItemProps) {
+  return <div>
+    <h3>Expense {expense.id}</h3>
+    <p>Date: {expense.date}</p>
+    <p>Description: {expense.description}</p>
+    {/* amount must be restricted to 2 decimal places */}
+    <p>Amount: {expense.amount.toFixed(2)}</p>
+    <p>Payer: {expense.payer}</p>
+  </div>;
+}
 
 export default ExpenseItem;

@@ -1,31 +1,24 @@
-import type { Expense } from "../type/Expense";
+import type { Expense } from "../types/Expense";
 
 interface ExpenseAddProps {
   addExpense: (expense: Expense) => void;
 }
 
-const ExpenseAdd = ({ addExpense }: ExpenseAddProps) => {
-  const handleAddClick = () => {
-    const id = Date.now().toString();
-    const payer = ["Alice", "Bob"][Math.floor(Math.random() * 2)];
-    const amount = Number((Math.random() * 100).toFixed(2));
-    const newExpense: Expense = {
-      id,
-      date: new Date().toISOString(),
-      description: `New expense ${id}`,
-      payer,
-      amount,
-    };
-    addExpense(newExpense);
+function generateRandomExpense(): Expense {
+  return {
+    id: Math.round(Math.random()*100).toString(),
+    date: "2026-09-18",
+    description: "New random Expense",
+    payer: "New random Payer",
+    amount: Math.random() * 100
   };
-  return (
-    <div>
-      <h2>Add New Expense</h2>
-      <button type="button" onClick={handleAddClick}>
-        Add Expense
-      </button>
-    </div>
-  );
-};
+}
+
+function ExpenseAdd({ addExpense }: ExpenseAddProps) {
+  return <div>
+    <h2>Add a new random Expense</h2>
+    <button onClick={() => addExpense(generateRandomExpense())}>Add</button>
+  </div>;
+}
 
 export default ExpenseAdd;

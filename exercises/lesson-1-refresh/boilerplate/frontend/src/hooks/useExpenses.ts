@@ -1,74 +1,81 @@
-import { useEffect, useState } from "react";
-import type { Expense } from "../type/Expense";
+import { useCallback, useEffect, useState } from 'react';
+import type { Expense } from '../types/Expense';
 
-const API_URL = "/api/expenses";
+const API_BASE_URL = 'http://localhost:3000/api';
 
-export const useExpenses = () => {
+interface UseExpensesResult {
+  expenses: Expense[];
+  loading: boolean;
+  error: string | null;
+  addExpense: (expense: Expense) => Promise<void>;
+  resetExpenses: () => Promise<void>;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
+
+function useExpenses(): UseExpensesResult {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchExpenses = async () => {
-    setLoading(true);
-    setError(null);
-
+  const fetchExpenses = useCallback(async () => {
     try {
-      const response = await fetch(API_URL);
-
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/expenses`);
       if (!response.ok) {
-        throw new Error("Failed to fetch expenses");
+        throw new Error(`Failed to fetch expenses (${response.status})`);
       }
-
-      const data: Expense[] = await response.json();
+      const data = (await response.json()) as Expense[];
       setExpenses(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch expenses");
+      setError(errorMessage(err));
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    void fetchExpenses();
   }, []);
 
-  const addExpense = async (expense: Expense) => {
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(expense),
-      });
+  // Runs once on mount to load the initial expense list.
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
 
-      if (!response.ok) {
-        throw new Error("Failed to add expense");
+  const addExpense = useCallback(
+    async (expense: Expense) => {
+      try {
+        setError(null);
+        const response = await fetch(`${API_BASE_URL}/expenses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(expense),
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to add expense (${response.status})`);
+        }
+        await fetchExpenses();
+      } catch (err) {
+        setError(errorMessage(err));
       }
+    },
+    [fetchExpenses],
+  );
 
+  const resetExpenses = useCallback(async () => {
+    try {
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/expenses/reset`, { method: 'POST' });
+      if (!response.ok) {
+        throw new Error(`Failed to reset expenses (${response.status})`);
+      }
       await fetchExpenses();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add expense");
+      setError(errorMessage(err));
     }
-  };
-
-  const resetExpenses = async () => {
-    try {
-      const response = await fetch(`${API_URL}/reset`, {
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to reset expenses");
-      }
-
-      await fetchExpenses();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to reset expenses");
-    }
-  };
+  }, [fetchExpenses]);
 
   return { expenses, loading, error, addExpense, resetExpenses };
-};
+}
 
 export default useExpenses;
